@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  student_name: MyString
+  student_info: MyText
+  status: MyString
+  teacher: one
+  counselor: one
+  admin: one
+
+two:
+  student_name: MyString
+  student_info: MyText
+  status: MyString
+  teacher: two
+  counselor: two
+  admin: two

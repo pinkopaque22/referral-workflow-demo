@@ -1,0 +1,30 @@
+# Use PostgreSQL. For local development, your system username is recommended.
+# If someone else clones this repo, they may need to change `username` to their local Postgres user
+# or set via environment variables.
+#
+# Example: export PGUSER=their_username
+#          export PGPASSWORD=their_password
+# Then Rails will pick these up automatically.
+
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  username: patriciaehrhardt     # <-- replace with your local Postgres user if different
+  password:                     # <-- fill in if your Postgres user has a password
+  host: localhost
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: referral_workflow_development
+
+test:
+  <<: *default
+  database: referral_workflow_test
+
+production:
+  <<: *default
+  database: referral_workflow_production
+  # For production, it's highly recommended to use environment variables for username/password:
+  # username: <%= ENV['POSTGRES_USER'] %>
+  # password: <%= ENV['POSTGRES_PASSWORD'] %>
