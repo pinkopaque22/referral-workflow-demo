@@ -1,5 +1,5 @@
 class ReferralsController < ApplicationController
-  before_action :set_referral, only: %i[show edit update destroy]
+  before_action :set_referral, :require_login, only: %i[show edit update destroy]
 
   # GET /referrals
   def index
