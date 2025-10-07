@@ -1,13 +1,17 @@
 class ReferralsController < ApplicationController
-  before_action :set_referral, only: %i[ show edit update destroy ]
+  before_action :set_referral, only: %i[show edit update destroy]
 
-  # GET /referrals or /referrals.json
+  # GET /referrals
   def index
-    @referrals = Referral.all
-  end
-
-  # GET /referrals/1 or /referrals/1.json
-  def show
+    if current_user.teacher?
+      @referrals = Referral.where(teacher: current_user)
+    elsif current_user.admin?
+      @referrals = Referral.all
+    elsif current_user.counselor?
+      @referrals = Referral.where(status: %w[approved_pending_counselor in_progress])
+    else
+      @referrals = Referral.none
+    end
   end
 
   # GET /referrals/new
@@ -15,56 +19,55 @@ class ReferralsController < ApplicationController
     @referral = Referral.new
   end
 
-  # GET /referrals/1/edit
+  # POST /referrals
+  def create
+    @referral = Referral.new(referral_params)
+    @referral.teacher = current_user if current_user.teacher?
+
+    if @referral.save
+      redirect_to referrals_path, notice: "Referral created successfully."
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  # GET /referrals/:id/edit
   def edit
   end
 
-  # POST /referrals or /referrals.json
-  def create
-    @referral = Referral.new(referral_params)
-
-    respond_to do |format|
-      if @referral.save
-        format.html { redirect_to @referral, notice: "Referral was successfully created." }
-        format.json { render :show, status: :created, location: @referral }
-      else
-        format.html { render :new, status: :unprocessable_entity }
-        format.json { render json: @referral.errors, status: :unprocessable_entity }
-      end
-    end
-  end
-
-  # PATCH/PUT /referrals/1 or /referrals/1.json
+  # PATCH/PUT /referrals/:id
   def update
-    respond_to do |format|
-      if @referral.update(referral_params)
-        format.html { redirect_to @referral, notice: "Referral was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @referral }
-      else
-        format.html { render :edit, status: :unprocessable_entity }
-        format.json { render json: @referral.errors, status: :unprocessable_entity }
-      end
+    if @referral.update(referral_params)
+      redirect_to referrals_path, notice: "Referral updated successfully."
+    else
+      render :edit, status: :unprocessable_entity
     end
   end
 
-  # DELETE /referrals/1 or /referrals/1.json
+  # DELETE /referrals/:id
   def destroy
-    @referral.destroy!
-
-    respond_to do |format|
-      format.html { redirect_to referrals_path, notice: "Referral was successfully destroyed.", status: :see_other }
-      format.json { head :no_content }
-    end
+    @referral.destroy
+    redirect_to referrals_path, notice: "Referral deleted successfully."
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_referral
-      @referral = Referral.find(params.expect(:id))
+
+  def set_referral
+    @referral = Referral.find(params[:id])
+  end
+
+  def referral_params
+    permitted = [:student_name, :student_info, :status, :admin_signature, :counselor_notes]
+
+    # Optionally allow only certain fields for certain roles
+    if current_user.teacher?
+      permitted = [:student_name, :student_info]
+    elsif current_user.admin?
+      permitted = [:status, :admin_signature]
+    elsif current_user.counselor?
+      permitted = [:counselor_notes]
     end
 
-    # Only allow a list of trusted parameters through.
-    def referral_params
-      params.require(:referral).permit(:student_name, :student_info, :status, :teacher_id, :counselor_id, :admin_id)
-    end
+    params.require(:referral).permit(permitted)
+  end
 end

@@ -10,19 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_01_231021) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_03_015831) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "referrals", force: :cascade do |t|
     t.string "student_name"
     t.text "student_info"
-    t.string "status"
     t.bigint "teacher_id", null: false
-    t.bigint "counselor_id", null: false
-    t.bigint "admin_id", null: false
+    t.bigint "counselor_id"
+    t.bigint "admin_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "status", default: "pending_admin_review", null: false
+    t.text "counselor_notes"
+    t.string "admin_signature"
   end
 
   create_table "users", force: :cascade do |t|
